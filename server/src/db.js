@@ -168,8 +168,122 @@ export function initDatabase() {
     CREATE INDEX IF NOT EXISTS idx_otp_expires ON otp_verifications(expires_at);
   `);
 
+  // Create every remaining table before any migration code runs. On a fresh
+  // database these tables do not exist yet, and the migrations below assume
+  // they do (settings is queried at the tracking-setting seed, reviews is
+  // cleaned before the unique index, order_status_history and rider_presence
+  // reference orders and users through foreign keys). Creating them up front
+  // makes initDatabase safe on a brand-new database while remaining a no-op
+  // on every existing one because every statement uses IF NOT EXISTS.
+  db.exec(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name_en TEXT NOT NULL,
+        name_hi TEXT NOT NULL,
+        name_gu TEXT NOT NULL,
+        image_url TEXT,
+        sort_order INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 1
+      );
+
+      CREATE TABLE IF NOT EXISTS menu_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category_id INTEGER,
+        name_en TEXT NOT NULL,
+        name_hi TEXT NOT NULL,
+        name_gu TEXT NOT NULL,
+        desc_en TEXT,
+        desc_hi TEXT,
+        desc_gu TEXT,
+        ingredients_en TEXT,
+        ingredients_hi TEXT,
+        ingredients_gu TEXT,
+        price REAL NOT NULL,
+        discount_price REAL,
+        is_veg INTEGER DEFAULT 1,
+        prep_time_mins INTEGER DEFAULT 15,
+        image_url TEXT,
+        is_available INTEGER DEFAULT 1,
+        available_qty INTEGER DEFAULT 50,
+        is_popular INTEGER DEFAULT 0,
+        is_special INTEGER DEFAULT 0,
+        customizations_json TEXT DEFAULT '[]',
+        rating REAL DEFAULT 4.8,
+        review_count INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_number TEXT UNIQUE NOT NULL,
+        user_id INTEGER,
+        customer_name TEXT NOT NULL,
+        customer_phone TEXT NOT NULL,
+        order_type TEXT NOT NULL DEFAULT 'delivery',
+        address_json TEXT DEFAULT '{}',
+        items_json TEXT NOT NULL,
+        item_total REAL NOT NULL,
+        discount_amount REAL DEFAULT 0,
+        coupon_code TEXT,
+        delivery_fee REAL DEFAULT 0,
+        tax_amount REAL DEFAULT 0,
+        grand_total REAL NOT NULL,
+        payment_method TEXT NOT NULL,
+        payment_status TEXT NOT NULL DEFAULT 'pending',
+        razorpay_order_id TEXT,
+        razorpay_payment_id TEXT,
+        status TEXT NOT NULL DEFAULT 'ORDER_PLACED',
+        rider_id INTEGER,
+        rider_name TEXT,
+        rider_phone TEXT,
+        rider_lat REAL,
+        rider_lng REAL,
+        estimated_delivery_mins INTEGER DEFAULT 30,
+        special_instructions TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS coupons (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        code TEXT UNIQUE NOT NULL,
+        discount_type TEXT NOT NULL,
+        discount_value REAL NOT NULL,
+        min_order_value REAL DEFAULT 0,
+        max_discount REAL,
+        valid_to DATETIME,
+        usage_limit INTEGER DEFAULT 500,
+        used_count INTEGER DEFAULT 0,
+        is_active INTEGER DEFAULT 1
+      );
+
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        order_id INTEGER,
+        item_id INTEGER,
+        user_id INTEGER,
+        customer_name TEXT NOT NULL,
+        rating INTEGER NOT NULL,
+        comment TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+        FOREIGN KEY (item_id) REFERENCES menu_items(id) ON DELETE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS order_counters (
+        counter_date TEXT PRIMARY KEY,
+        value INTEGER NOT NULL DEFAULT 0
+      );
+    `);
+
   // A registration claim is a bearer token, so the only way to stop it being
-  // replayed is to record that it has been spent. `consumed_at` is that record.
   // It is stamped when an account is created from the claim, which is what makes
   // the claim single-use rather than a reusable key for the customer's number.
   try {
@@ -672,116 +786,6 @@ export function initDatabase() {
       `Cleared ${clearedGeneratedEmails} auto-generated customer email(s). Customers now have an empty optional email field.`
     );
   }
-
-  // Add other tables...
-
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name_en TEXT NOT NULL,
-      name_hi TEXT NOT NULL,
-      name_gu TEXT NOT NULL,
-      image_url TEXT,
-      sort_order INTEGER DEFAULT 0,
-      is_active INTEGER DEFAULT 1
-    );
-
-    CREATE TABLE IF NOT EXISTS menu_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      category_id INTEGER,
-      name_en TEXT NOT NULL,
-      name_hi TEXT NOT NULL,
-      name_gu TEXT NOT NULL,
-      desc_en TEXT,
-      desc_hi TEXT,
-      desc_gu TEXT,
-      ingredients_en TEXT,
-      ingredients_hi TEXT,
-      ingredients_gu TEXT,
-      price REAL NOT NULL,
-      discount_price REAL,
-      is_veg INTEGER DEFAULT 1,
-      prep_time_mins INTEGER DEFAULT 15,
-      image_url TEXT,
-      is_available INTEGER DEFAULT 1,
-      available_qty INTEGER DEFAULT 50,
-      is_popular INTEGER DEFAULT 0,
-      is_special INTEGER DEFAULT 0,
-      customizations_json TEXT DEFAULT '[]',
-      rating REAL DEFAULT 4.8,
-      review_count INTEGER DEFAULT 1,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS orders (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      order_number TEXT UNIQUE NOT NULL,
-      user_id INTEGER,
-      customer_name TEXT NOT NULL,
-      customer_phone TEXT NOT NULL,
-      order_type TEXT NOT NULL DEFAULT 'delivery',
-      address_json TEXT DEFAULT '{}',
-      items_json TEXT NOT NULL,
-      item_total REAL NOT NULL,
-      discount_amount REAL DEFAULT 0,
-      coupon_code TEXT,
-      delivery_fee REAL DEFAULT 0,
-      tax_amount REAL DEFAULT 0,
-      grand_total REAL NOT NULL,
-      payment_method TEXT NOT NULL,
-      payment_status TEXT NOT NULL DEFAULT 'pending',
-      razorpay_order_id TEXT,
-      razorpay_payment_id TEXT,
-      status TEXT NOT NULL DEFAULT 'ORDER_PLACED',
-      rider_id INTEGER,
-      rider_name TEXT,
-      rider_phone TEXT,
-      rider_lat REAL,
-      rider_lng REAL,
-      estimated_delivery_mins INTEGER DEFAULT 30,
-      special_instructions TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS coupons (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      code TEXT UNIQUE NOT NULL,
-      discount_type TEXT NOT NULL,
-      discount_value REAL NOT NULL,
-      min_order_value REAL DEFAULT 0,
-      max_discount REAL,
-      valid_to DATETIME,
-      usage_limit INTEGER DEFAULT 500,
-      used_count INTEGER DEFAULT 0,
-      is_active INTEGER DEFAULT 1
-    );
-
-    CREATE TABLE IF NOT EXISTS reviews (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      order_id INTEGER,
-      item_id INTEGER,
-      user_id INTEGER,
-      customer_name TEXT NOT NULL,
-      rating INTEGER NOT NULL,
-      comment TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-      FOREIGN KEY (item_id) REFERENCES menu_items(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
-
-    CREATE TABLE IF NOT EXISTS order_counters (
-      counter_date TEXT PRIMARY KEY,
-      value INTEGER NOT NULL DEFAULT 0
-    );
-  `);
 
   seedData();
   normalizeMenuDatabase();
