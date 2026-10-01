@@ -7,7 +7,7 @@
     "start": "node server/src/server.js",
     "server": "npm --prefix server start",
     "client": "npm --prefix client dev",
-    "build": "npm --prefix client run build",
+    "build": "npm --prefix server install && npm --prefix client install --include=dev && npm --prefix client run build",
     "test": "node test/e2e_verification.js",
     "test:rider-gps": "node test/rider_gps_engine.test.mjs",
     "test:rider-e2e": "node test/rider_delivery_e2e.mjs",
