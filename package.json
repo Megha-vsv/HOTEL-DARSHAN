@@ -1,0 +1,27 @@
+{
+  "name": "hotel-darshan-platform",
+  "version": "1.0.0",
+  "description": "Production Food Delivery Application for Hotel Darshan",
+  "type": "module",
+  "scripts": {
+    "start": "node server/src/server.js",
+    "server": "npm --prefix server start",
+    "client": "npm --prefix client dev",
+    "build": "npm --prefix client run build",
+    "test": "node test/e2e_verification.js",
+    "test:rider-gps": "node test/rider_gps_engine.test.mjs",
+    "test:rider-e2e": "node test/rider_delivery_e2e.mjs",
+    "test:all": "node test/e2e_verification.js && node test/rider_gps_engine.test.mjs && node test/rider_delivery_e2e.mjs"
+  },
+  "keywords": [
+    "food-delivery",
+    "hotel-darshan",
+    "restaurant",
+    "kds",
+    "realtime",
+    "razorpay"
+  ],
+  "devDependencies": {
+    "socket.io-client": "^4.8.4"
+  }
+}

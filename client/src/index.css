@@ -1,0 +1,397 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --brand-primary: #e53935;
+    --brand-primary-hover: #d32f2f;
+    --brand-light: #fef2f2;
+    --brand-border: #fee2e2;
+  }
+
+  /* Prevent horizontal overflow on narrow mobile screens (360px-430px) */
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  body {
+    background-color: #fcfcfc;
+    color: #1f2937;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    /* Keep bottom fixed bars above the iOS home indicator */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Minimum 44px touch targets for mobile food-delivery UX */
+  button,
+  a,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+  }
+
+  /* Smaller touch targets are allowed only for icon-only decorative buttons */
+  .icon-btn-sm {
+    min-height: 36px !important;
+    min-width: 36px !important;
+  }
+
+  /* Ensure modals/overlays don't get squeezed by the software keyboard */
+  .modal-safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+.shadow-xs {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Veg / Non-Veg Icon styling */
+.food-veg-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #16a34a;
+  border-radius: 3px;
+  background-color: #ffffff;
+}
+.food-veg-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #16a34a;
+}
+
+.food-nonveg-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #dc2626;
+  border-radius: 3px;
+  background-color: #ffffff;
+}
+.food-nonveg-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #dc2626;
+}
+
+/* Subtle pulse animation for new order highlighting */
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* ============================================================
+   HOTEL DARSHAN — CUSTOMER APPEARANCE
+   ============================================================
+   Light stays exactly as it is today: every rule below is scoped to
+   [data-hd-theme='dark'], which is only ever set by the customer
+   ThemeContext. The staff/admin portals never mount it.
+
+   Tailwind v4 compiles utilities to var(--color-*) references, so
+   remapping the palette re-themes the existing markup without
+   touching a single component. Hotel Darshan's brand red
+   (#e53935 / #e53939 / #c62828) is deliberately left untouched.
+   ============================================================ */
+
+/* Chips that sit on top of food imagery and must stay light in both themes. */
+.hd-media-chip {
+  background-color: #ffffff;
+  color: #b91c1c;
+}
+
+/* The palette itself. This is the single source of the dark ramp, shared by the
+   customer surface (attribute on <html>) and the Admin surface (attribute on the
+   admin root element). Because Tailwind v4 compiles utilities to var(--color-*),
+   remapping here re-themes the existing markup with no component changes. */
+[data-hd-theme='dark'],
+[data-hd-admin-theme='dark'] {
+  color-scheme: dark;
+
+  /* Surfaces, from page background up to raised controls */
+  --hd-page: #0d0d10;
+  --hd-surface: #17171b;
+  --hd-surface-2: #1f1f25;
+  --hd-surface-3: #26262d;
+  --hd-border: #2e2e36;
+  --hd-border-strong: #3f3f49;
+
+  /* Chrome that is already dark in the light theme (footer, hero, nav strip) */
+  --hd-chrome: #0a0a0c;
+  --hd-chrome-2: #17171b;
+  --hd-chrome-3: #26262d;
+
+  /* Text */
+  --hd-text: #f4f4f7;
+  --hd-text-2: #c8c8d1;
+  --hd-text-3: #9a9aa5;
+  --hd-text-4: #75757f;
+
+  /* Neutral + gray ramp: pale surfaces become dark, dark text becomes light */
+  --color-neutral-50: #121216;
+  --color-neutral-100: #1c1c21;
+  --color-neutral-200: #2c2c34;
+  --color-neutral-300: #3b3b45;
+  --color-neutral-400: #8c8c97;
+  --color-neutral-500: #a6a6b1;
+  --color-neutral-600: #c3c3cc;
+  --color-neutral-700: #e3e3e9;
+  --color-neutral-800: #f0f0f4;
+  --color-neutral-900: #ffffff;
+  --color-neutral-950: #ffffff;
+
+  --color-gray-50: #121216;
+  --color-gray-100: #1c1c21;
+  --color-gray-200: #2c2c34;
+  --color-gray-300: #3b3b45;
+  --color-gray-400: #8c8c97;
+  --color-gray-500: #a6a6b1;
+  --color-gray-600: #c3c3cc;
+  --color-gray-700: #e3e3e9;
+  --color-gray-800: #f0f0f4;
+  --color-gray-900: #ffffff;
+  --color-gray-950: #ffffff;
+
+  /* Tinted surfaces keep their hue but become dark; tinted text becomes light */
+  --color-red-50: #2a1417;
+  --color-red-100: #3a1a1d;
+  --color-red-200: #4d2126;
+  --color-red-300: #6b2b31;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #f05252;
+  --color-red-700: #b91c1c;
+  --color-red-800: #fecaca;
+  --color-red-900: #fee2e2;
+
+  --color-orange-50: #2a1f14;
+  --color-orange-100: #3a2a1a;
+  --color-orange-200: #4a3620;
+
+  --color-amber-50: #2a2214;
+  --color-amber-100: #3a2f16;
+  --color-amber-200: #4a3c1c;
+  --color-amber-600: #d97706;
+  --color-amber-700: #ca7a08;
+  --color-amber-800: #fcd34d;
+  --color-amber-900: #fde68a;
+
+  --color-green-50: #0f2318;
+  --color-green-100: #16301d;
+  --color-green-200: #1c4029;
+  --color-green-300: #1e4a2b;
+  --color-green-800: #bbf7d0;
+
+  --color-emerald-50: #0f2318;
+  --color-emerald-100: #14301f;
+  --color-emerald-200: #1c4029;
+  --color-emerald-800: #a7f3d0;
+  --color-emerald-900: #d1fae5;
+
+  --color-teal-50: #0d2426;
+  --color-teal-100: #123234;
+
+  --color-blue-50: #101c28;
+  --color-blue-100: #12212f;
+  --color-blue-200: #1a2c3d;
+  --color-blue-900: #dbeafe;
+
+  --color-purple-50: #1e1526;
+  --color-purple-100: #1f1630;
+  --color-purple-200: #2c1f3d;
+  --color-purple-900: #ede9fe;
+}
+
+/* ------------------------------------------------------------
+   Page / document level
+   ------------------------------------------------------------ */
+[data-hd-theme='dark'] body {
+  background-color: var(--hd-page);
+  color: var(--hd-text);
+}
+
+[data-hd-theme='dark'] ::-webkit-scrollbar-track {
+  background: #121216;
+}
+[data-hd-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #3b3b45;
+}
+[data-hd-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #4f4f5b;
+}
+
+[data-hd-theme='dark'] .shadow-xs {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.55);
+}
+
+/* ------------------------------------------------------------
+   Solid white surfaces (cards, navbar, modals, inputs, drawers)
+   ------------------------------------------------------------ */
+[data-hd-theme='dark'] .bg-white {
+  background-color: var(--hd-surface);
+}
+[data-hd-theme='dark'] .focus\:bg-white:focus,
+[data-hd-theme='dark'] .focus-within\:bg-white:focus-within {
+  background-color: var(--hd-surface-2);
+}
+[data-hd-theme='dark'] .bg-white\/95 {
+  background-color: rgb(23 23 27 / 0.95);
+}
+
+/* The page background is a hard-coded literal in a few components. */
+[data-hd-theme='dark'] .bg-\[\#fafafa\] {
+  background-color: var(--hd-page);
+}
+
+/* ------------------------------------------------------------
+   Chrome that stays dark in both themes. The neutral ramp is
+   remapped for TEXT, so these backgrounds/borders are re-asserted.
+   ------------------------------------------------------------ */
+[data-hd-theme='dark'] .bg-neutral-900 {
+  background-color: var(--hd-chrome);
+}
+[data-hd-theme='dark'] .bg-neutral-800 {
+  background-color: var(--hd-chrome-3);
+}
+[data-hd-theme='dark'] .bg-neutral-800\/80 {
+  background-color: rgb(38 38 45 / 0.8);
+}
+[data-hd-theme='dark'] .hover\:bg-neutral-800:hover {
+  background-color: var(--hd-chrome-2);
+}
+[data-hd-theme='dark'] .border-neutral-900 {
+  border-color: var(--hd-border-strong);
+}
+[data-hd-theme='dark'] .border-neutral-800,
+[data-hd-theme='dark'] .border-neutral-700 {
+  border-color: var(--hd-border);
+}
+[data-hd-theme='dark'] .text-neutral-300 {
+  color: var(--hd-text-3);
+}
+[data-hd-theme='dark'] .bg-emerald-900\/60 {
+  background-color: rgb(6 78 59 / 0.6);
+}
+[data-hd-theme='dark'] .from-neutral-900 {
+  --tw-gradient-from: var(--hd-chrome-2);
+}
+[data-hd-theme='dark'] .via-neutral-800 {
+  --tw-gradient-via: var(--hd-chrome-3);
+}
+[data-hd-theme='dark'] .to-neutral-900 {
+  --tw-gradient-to: var(--hd-chrome-2);
+}
+/* ============================================================
+   HOTEL DARSHAN - ADMIN APPEARANCE
+   ============================================================
+   The Admin surface reuses the exact palette declared above, so Light and
+   Dark keep the existing Hotel Darshan colours, spacing, typography and
+   components - only the surface/text ramp changes. These are the same
+   overrides the customer theme already uses, repeated for the admin
+   attribute so the customer's own rules stay byte-for-byte untouched.
+   The attribute lives on the Admin root element, so the customer, kitchen
+   and rider surfaces are never affected. Hotel Darshan's brand red
+   (#e53935 / #e53939 / #c62828) is deliberately left untouched.
+   ============================================================ */
+
+[data-hd-admin-theme='dark'] ::-webkit-scrollbar-track {
+  background: #121216;
+}
+[data-hd-admin-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #3b3b45;
+}
+[data-hd-admin-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #4f4f5b;
+}
+
+[data-hd-admin-theme='dark'] .shadow-xs {
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.55);
+}
+
+/* Solid white surfaces (cards, header, modals, inputs, menus) */
+[data-hd-admin-theme='dark'] .bg-white {
+  background-color: var(--hd-surface);
+}
+[data-hd-admin-theme='dark'] .focus\:bg-white:focus,
+[data-hd-admin-theme='dark'] .focus-within\:bg-white:focus-within {
+  background-color: var(--hd-surface-2);
+}
+[data-hd-admin-theme='dark'] .bg-white\/95 {
+  background-color: rgb(23 23 27 / 0.95);
+}
+[data-hd-admin-theme='dark'] .bg-\[\#fafafa\] {
+  background-color: var(--hd-page);
+}
+
+/* Chrome that stays dark in both themes */
+[data-hd-admin-theme='dark'] .bg-neutral-900 {
+  background-color: var(--hd-chrome);
+}
+[data-hd-admin-theme='dark'] .bg-neutral-800 {
+  background-color: var(--hd-chrome-3);
+}
+[data-hd-admin-theme='dark'] .bg-neutral-800\/80 {
+  background-color: rgb(38 38 45 / 0.8);
+}
+[data-hd-admin-theme='dark'] .hover\:bg-neutral-800:hover {
+  background-color: var(--hd-chrome-2);
+}
+[data-hd-admin-theme='dark'] .border-neutral-900 {
+  border-color: var(--hd-border-strong);
+}
+[data-hd-admin-theme='dark'] .border-neutral-800,
+[data-hd-admin-theme='dark'] .border-neutral-700 {
+  border-color: var(--hd-border);
+}
+[data-hd-admin-theme='dark'] .text-neutral-300 {
+  color: var(--hd-text-3);
+}
+[data-hd-admin-theme='dark'] .bg-emerald-900\/60 {
+  background-color: rgb(6 78 59 / 0.6);
+}
+[data-hd-admin-theme='dark'] .from-neutral-900 {
+  --tw-gradient-from: var(--hd-chrome-2);
+}
+[data-hd-admin-theme='dark'] .via-neutral-800 {
+  --tw-gradient-via: var(--hd-chrome-3);
+}
+[data-hd-admin-theme='dark'] .to-neutral-900 {
+  --tw-gradient-to: var(--hd-chrome-2);
+}

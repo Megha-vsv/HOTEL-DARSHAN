@@ -1,0 +1,21 @@
+# Secrets. server/.env holds MSG91_AUTHKEY, the MSG91 widget token, JWT_SECRET and
+# the Paytm merchant key. It must never be committed, and the rule belongs here
+# rather than in a root file so it travels with the server package.
+.env
+.env.*
+!.env.example
+
+# The live SQLite database and its WAL sidecars. The database holds real customer
+# names, addresses, mobile numbers and order history, so it is excluded on the same
+# grounds as the keys above - and unlike them it is large and never useful in a
+# diff. hotel_darshan.db is what server/src/db.js opens by default.
+hotel_darshan.db
+hotel_darshan.db-shm
+hotel_darshan.db-wal
+*.db
+*.db-shm
+*.db-wal
+
+node_modules
+*.log
+npm-debug.log*

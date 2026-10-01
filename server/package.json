@@ -1,0 +1,22 @@
+{
+  "name": "hotel-darshan-server",
+  "version": "1.0.0",
+  "description": "Production backend for Hotel Darshan Food Delivery Platform",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "razorpay": "^2.9.5",
+    "socket.io": "^4.8.1",
+    "paytmchecksum": "^1.5.0"
+  }
+}

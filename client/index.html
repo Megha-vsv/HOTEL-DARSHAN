@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Hotel Darshan logo. The favicon points at the same file the in-app logo
+         uses, so the tab and the app can never show different branding. -->
+    <link rel="icon" type="image/jpeg" href="/HotelDarshanLOGO.jpeg" />
+    <link rel="apple-touch-icon" href="/HotelDarshanLOGO.jpeg" />
+    <link rel="shortcut icon" type="image/jpeg" href="/HotelDarshanLOGO.jpeg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#e53935" />
+    <meta name="description" content="Hotel Darshan - Modern food delivery platform serving authentic Gujarati, Kathiyawadi, and North Indian cuisine." />
+    <title>Hotel Darshan • Authentic Food Delivery & Restaurant</title>
+  </head>
+  <body class="bg-[#fafafa] antialiased text-neutral-800 selection:bg-red-500 selection:text-white">
+    <div id="root"></div>
+    <script>
+      // Apply the saved Hotel Darshan customer appearance before first paint so
+      // a dark preference never flashes the light theme. Mirrors ThemeContext.
+      (function () {
+        try {
+          var saved = localStorage.getItem('hotel_darshan_theme');
+          var theme = saved === 'dark' || saved === 'light' || saved === 'system' ? saved : 'light';
+          var resolved = theme === 'system'
+            ? (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+            : theme;
+          document.documentElement.setAttribute('data-hd-theme', resolved);
+          document.documentElement.style.colorScheme = resolved;
+        } catch (e) { /* keep the default light appearance */ }
+      })();
+    </script>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
