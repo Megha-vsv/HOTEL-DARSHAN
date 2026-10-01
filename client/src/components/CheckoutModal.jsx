@@ -15,6 +15,7 @@ import FoodImage from './FoodImage';
 import { UNRESOLVED_DISTANCE_REASON as UNRESOLVED_DISTANCE_MESSAGE } from '../data/deliveryPricing';
 import { getEstimatedMinutes } from '../lib/time.js';
 import { orderingStatus } from '../lib/time.js';
+import { apiBase as API_BASE } from '../lib/apiBase';
 import {
   MapPin,
   ShieldCheck,
@@ -333,7 +334,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
-      const createRes = await fetch('/api/orders/create', { method: 'POST', headers, body: JSON.stringify(orderPayload) });
+      const createRes = await fetch(`${API_BASE}/orders/create`, { method: 'POST', headers, body: JSON.stringify(orderPayload) });
       const orderData = await createRes.json();
       if (!createRes.ok) throw new Error(orderData.error || 'Failed to place order.');
 
@@ -342,7 +343,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
       setPaymentPendingModal(true);
       const paytmHeaders = { 'Content-Type': 'application/json' };
       if (token) paytmHeaders['Authorization'] = `Bearer ${token}`;
-      const paytmRes = await fetch('/api/payment/paytm/create', { method: 'POST', headers: paytmHeaders, body: JSON.stringify({ order_id: orderData.id }) });
+      const paytmRes = await fetch(`${API_BASE}/payment/paytm/create`, { method: 'POST', headers: paytmHeaders, body: JSON.stringify({ order_id: orderData.id }) });
       const paytmData = await paytmRes.json();
       if (!paytmRes.ok || !paytmData.success) throw new Error(paytmData.error || 'Paytm payment is not configured yet.');
 
@@ -383,7 +384,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
     try {
       const verifyHeaders = { 'Content-Type': 'application/json' };
       if (token) verifyHeaders['Authorization'] = `Bearer ${token}`;
-      const verifyRes = await fetch('/api/payment/paytm/status', {
+      const verifyRes = await fetch(`${API_BASE}/payment/paytm/status`, {
         method: 'POST', headers: verifyHeaders, body: JSON.stringify({ order_id: orderId })
       });
       const verifyData = await verifyRes.json();
