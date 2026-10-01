@@ -9,6 +9,7 @@ import { useCart } from '../context/CartContext';
 import { resolveFoodImage } from '../data/foodImages';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
+import { apiBase as API_BASE } from '../lib/apiBase';
 
 const STORAGE_KEYS = {
   notifications: 'hotel_darshan_notification_preferences',
@@ -152,7 +153,7 @@ export default function AccountSettings({ onBack, onOpenOrders, menuItems = [] }
     if (!token) return;
     let cancelled = false;
     setOrdersLoading(true);
-    fetch('/api/orders/my-orders', { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_BASE}/orders/my-orders`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => { if (!cancelled) setOrders(Array.isArray(data) ? data : []); })
       .catch(() => { if (!cancelled) setOrders([]); })

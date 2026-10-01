@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { apiBase as API_BASE } from '../../lib/apiBase';
 
 // Why a rider cannot be given the next order, in the admin's language. The server
 // sends a code; these are the readings of it. An unrecognised code falls through
@@ -187,7 +188,7 @@ export default function AdminRiderFleet() {
     if (!quiet) setLoading(true);
     setRefreshing(true);
     try {
-      const res = await fetch('/api/orders/rider/fleet', {
+      const res = await fetch(`${API_BASE}/orders/rider/fleet`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (mine !== requestId.current) return;

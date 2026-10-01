@@ -6,6 +6,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { readStoredLocation, writeStoredLocation } from '../utils/deliveryLocation';
 import { parseHotelCoords } from '../data/deliveryPricing';
+import { apiBase as API_BASE } from '../lib/apiBase';
 
 export default function LocationGate({ onReady }) {
   const { user, updateUserProfile } = useAuth();
@@ -61,7 +62,7 @@ export default function LocationGate({ onReady }) {
   // just without the hotel pin, which is better than a wrong pin.
   useEffect(() => {
     let cancelled = false;
-    fetch('/api/settings')
+    fetch(`${API_BASE}/settings`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (cancelled) return;

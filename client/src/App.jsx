@@ -26,6 +26,7 @@ import AuthPage from './components/AuthPage';
 import AccountSettings from './components/AccountSettings';
 import PermissionScreen from './components/PermissionScreen';
 import LocationGate from './components/LocationGate';
+import { apiBase as API_BASE } from './lib/apiBase';
 const StaffPortal = React.lazy(() => import('./components/StaffPortal.jsx'));
 
 import {
@@ -109,7 +110,7 @@ function PostOrderFeedbackModal({ orderId, onClose, onReviewed }) {
     setError('');
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/orders/${orderId}/review`, {
+      const res = await fetch(`${API_BASE}/orders/${orderId}/review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -457,8 +458,8 @@ const hotelDarshanMenuItems = [
 const fetchMenuData = async () => {
     try {
       const [catRes, itemRes] = await Promise.all([
-        fetch('/api/menu/categories'),
-        fetch('/api/menu/items')
+        fetch(`${API_BASE}/menu/categories`),
+        fetch(`${API_BASE}/menu/items`)
       ]);
 
       if (catRes.ok) {
@@ -595,7 +596,7 @@ const fetchMenuData = async () => {
     const loadMyOrders = async () => {
       if (!token || user?.role !== 'customer') { setMyOrders([]); return; }
       try {
-        const res = await fetch('/api/orders/my-orders', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_BASE}/orders/my-orders`, { headers: { Authorization: `Bearer ${token}` } });
         if (res.ok) setMyOrders(await res.json());
       } catch {
         setMyOrders([]);
@@ -768,7 +769,7 @@ const fetchMenuData = async () => {
       return;
     }
     try {
-      const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}/review`, {
+      const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(orderId)}/review`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       if (!res.ok) return;
@@ -1337,7 +1338,7 @@ const fetchMenuData = async () => {
 
       {/* The feedback form is only ever rendered for a real, identified order.
           Guarding here as well as in the effect means a cleared active order can
-          never produce a request for `/api/orders/undefined/review`. */}
+          never produce a request for `${API_BASE}/orders/undefined/review`. */}
       {isFeedbackOpen && feedbackOrderId && (
         <PostOrderFeedbackModal
           orderId={feedbackOrderId}

@@ -5,6 +5,7 @@ import { quoteFromSettings } from '../data/deliveryPricing';
 import { readStoredLocation, LOCATION_CHANGE_EVENT } from '../utils/deliveryLocation';
 import { useSocket } from './SocketContext';
 import { FINISHED_STATUSES } from '../lib/orderStatus';
+import { apiBase as API_BASE } from '../lib/apiBase';
 
 const CartContext = createContext();
 
@@ -60,7 +61,7 @@ export function CartProvider({ children }) {
 
   const fetchActiveCoupons = async () => {
     try {
-      const res = await fetch('/api/coupons');
+      const res = await fetch(`${API_BASE}/coupons`);
       if (res.ok) setActiveCoupons(await res.json());
     } catch (e) {}
   };
@@ -114,7 +115,7 @@ export function CartProvider({ children }) {
     }
     if (!ref?.id) return undefined;
 
-    fetch(`/api/orders/${ref.id}/track`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_BASE}/orders/${ref.id}/track`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => (res.ok ? res.json() : null))
       .then((fresh) => {
         if (cancelled || !fresh) return;
@@ -132,7 +133,7 @@ export function CartProvider({ children }) {
 
   // Fetch hotel settings and active coupons from backend API
   useEffect(() => {
-    fetch('/api/settings')
+    fetch(`${API_BASE}/settings`)
       .then(res => (res.ok ? res.json() : {}))
       .then(data => setSettings(prev => ({ ...prev, ...data })))
       .catch(() => {});
@@ -192,7 +193,7 @@ export function CartProvider({ children }) {
         // written here and read back as a fallback by the My Orders screens, which
         // meant a second copy of every finished order that could disagree with the
         // server's - and did, because what it stored was a socket envelope rather
-        // than the order. My Orders reads `/api/orders/my-orders`, which is the
+        // than the order. My Orders reads `${API_BASE}/orders/my-orders`, which is the
         // same row the kitchen, the admin and the rider are reading.
         if (wasActive && nowCompleted) {
           try {
@@ -334,7 +335,7 @@ export function CartProvider({ children }) {
 
     if (token) {
       try {
-        await fetch('/api/auth/favorites/toggle', {
+        await fetch(`${API_BASE}/auth/favorites/toggle`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -352,7 +353,7 @@ export function CartProvider({ children }) {
   const applyCoupon = async (code) => {
     const currentItemTotal = cart.reduce((sum, item) => sum + (Number(item.itemTotalPrice) || 0), 0);
     try {
-      const res = await fetch('/api/coupons/validate', {
+      const res = await fetch(`${API_BASE}/coupons/validate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, cartTotal: currentItemTotal })

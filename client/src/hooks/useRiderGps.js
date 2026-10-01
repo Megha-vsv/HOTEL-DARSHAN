@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { RiderGpsEngine } from '../lib/riderGpsEngine.js';
+import { apiBase as API_BASE } from '../lib/apiBase';
 
 /**
  * The rider's GPS, wired to the server's version of the truth.
@@ -37,7 +38,7 @@ export function useRiderGps({ activeOrder, online, pickedUp }) {
   useEffect(() => {
     let cancelled = false;
     if (!token) return undefined;
-    fetch('/api/rider/gps-config', { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_BASE}/rider/gps-config`, { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => (r.ok ? r.json() : null))
       .then((cfg) => { if (!cancelled && cfg) setConfig(cfg); })
       .catch(() => {});
@@ -67,13 +68,13 @@ export function useRiderGps({ activeOrder, online, pickedUp }) {
       // "We have no position" is not a coordinate, so it takes its own endpoint
       // shape rather than being sent as a latitude of zero.
       if (payload?.__unavailable) {
-        return fetch('/api/rider/location-unavailable', {
+        return fetch(`${API_BASE}/rider/location-unavailable`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ orderId: payload.orderId, reason: payload.reason || 'No GPS fix' })
         }).then((r) => ({ ok: r.ok })).catch((e) => ({ ok: false, error: e.message }));
       }
-      return fetch('/api/rider/location', {
+      return fetch(`${API_BASE}/rider/location`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(payload)

@@ -19,6 +19,7 @@ import {
   Minus
 } from 'lucide-react';
 import FoodImage from './FoodImage';
+import { apiBase as API_BASE } from '../lib/apiBase';
 
 function StatusBadge({ status }) {
   const s = String(status || 'ORDER_PLACED').replace(/_/g, ' ');
@@ -184,7 +185,7 @@ export function MyOrdersView({ onBackToMenu, onReorder, menuItems = [] }) {
     let loaded = [];
     if (token) {
       try {
-        const res = await fetch('/api/orders/my-orders', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_BASE}/orders/my-orders`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) throw new Error('Your order history could not be loaded.');
         const data = await res.json();
         if (Array.isArray(data)) loaded = data;
@@ -434,7 +435,7 @@ export function OrderDetailView({ orderId, onBackToOrders, onTrackOrder, onReord
     try {
       setLoading(true);
       setError('');
-      const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}/track`, {
+      const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(orderId)}/track`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       const data = await res.json();
@@ -608,8 +609,8 @@ export default function CustomerView({
       try {
         setLoading(true);
         const [catRes, itemRes] = await Promise.all([
-          fetch('/api/menu/categories'),
-          fetch('/api/menu/items')
+          fetch(`${API_BASE}/menu/categories`),
+          fetch(`${API_BASE}/menu/items`)
         ]);
         if (catRes.ok) setCategories(await catRes.json());
         if (itemRes.ok) setItems(await itemRes.json());
@@ -630,7 +631,7 @@ export default function CustomerView({
 
     if (token) {
       try {
-        const res = await fetch('/api/orders/my-orders', {
+        const res = await fetch(`${API_BASE}/orders/my-orders`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {

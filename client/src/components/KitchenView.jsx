@@ -29,6 +29,7 @@ import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
 import { FINISHED_STATUSES, isFinished } from '../lib/orderStatus';
 import { parseServerTimestamp, formatClockTime, formatDateTime, formatDayDate, minutesSince } from '../lib/time.js';
+import { apiBase as API_BASE } from '../lib/apiBase';
 
 const NEW_STATUSES = ['ORDER_PLACED', 'ORDER_CONFIRMED'];
 
@@ -774,7 +775,7 @@ function KitchenView() {
     let cancelled = false;
     const fetchKitchenStatus = async () => {
       try {
-        const res = await fetch('/api/settings');
+        const res = await fetch(`${API_BASE}/settings`);
         if (res.ok) {
           const s = await res.json();
           if (!cancelled) {
