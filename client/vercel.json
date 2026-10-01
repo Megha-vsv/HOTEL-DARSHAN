@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/((?!assets/|FoodImages/|index\\.html|.*\\.(js|css|jpeg|jpg|png|svg|ico|gif|webp|woff|woff2|ttf|map)$).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
