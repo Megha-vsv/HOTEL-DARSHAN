@@ -19,6 +19,7 @@ import {
 } from '../lib/time.js';
 import { useSocket } from '../context/SocketContext';
 import { useAuth } from '../context/AuthContext';
+import { apiBase as API_BASE } from '../lib/apiBase';
 import { useTheme, ADMIN_THEME_ATTRIBUTE } from '../context/ThemeContext';
 import KitchenView from './KitchenView';
 import AdminRiderFleet from './admin/AdminRiderFleet';
@@ -472,7 +473,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleSaveSettings = async (updates) => {
     setSettingsSaving(true);
     try {
-      const res = await fetch('/api/settings', {
+      const res = await fetch(`${API_BASE}/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -714,7 +715,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
 
   const fetchAnalytics = async (range = dateFilter) => {
     try {
-      const res = await fetch('/api/analytics' + (range ? `?range=${range}` : ''), {
+      const res = await fetch(`${API_BASE}/analytics` + (range ? `?range=${range}` : ''), {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setAnalytics(await res.json());
@@ -723,7 +724,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
 
   const fetchOrderStats = async () => {
     try {
-      const res = await fetch('/api/orders/stats', {
+      const res = await fetch(`${API_BASE}/orders/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setOrderStats(await res.json());
@@ -736,8 +737,8 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
       // here, so a page cap would quietly make older orders unfindable and show
       // the page size as a total. The real totals come from /stats.
       const [res, statsRes] = await Promise.all([
-        fetch('/api/orders?limit=5000', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/orders/stats', { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_BASE}/orders?limit=5000`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/orders/stats`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       if (res.ok) setOrders(await res.json());
       if (statsRes.ok) setOrderStats(await statsRes.json());
@@ -747,8 +748,8 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const fetchMenu = async () => {
     try {
       const [catRes, itemRes] = await Promise.all([
-        fetch('/api/menu/categories', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/menu/items')
+        fetch(`${API_BASE}/menu/categories`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/menu/items`)
       ]);
       if (catRes.ok) setCategories(await catRes.json());
       if (itemRes.ok) setItems(await itemRes.json());
@@ -757,7 +758,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
 
   const fetchCoupons = async () => {
     try {
-      const res = await fetch('/api/coupons/all', {
+      const res = await fetch(`${API_BASE}/coupons/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) setCoupons(await res.json());
@@ -767,8 +768,8 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const fetchCustomersAndReviews = async () => {
     try {
       const [custRes, revRes] = await Promise.all([
-        fetch('/api/customers', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/customers/reviews', { headers: { Authorization: `Bearer ${token}` } })
+        fetch(`${API_BASE}/customers`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/customers/reviews`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       if (custRes.ok) setCustomers(await custRes.json());
       if (revRes.ok) setReviews(await revRes.json());
@@ -777,7 +778,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
 
   const fetchStaff = async () => {
     try {
-      const res = await fetch('/api/staff', { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_BASE}/staff`, { headers: { Authorization: `Bearer ${token}` } });
       if (res.ok) setStaff(await res.json());
       else {
         const err = await res.json().catch(() => ({}));
@@ -790,7 +791,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings');
+      const res = await fetch(`${API_BASE}/settings`);
       if (res.ok) setSettings(await res.json());
     } catch (e) {}
   };
@@ -886,7 +887,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleToggleAvailability = async (item) => {
     const newStatus = item.is_available ? 0 : 1;
     try {
-      const res = await fetch(`/api/menu/items/${item.id}/availability`, {
+      const res = await fetch(`${API_BASE}/menu/items/${item.id}/availability`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -906,7 +907,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   // Update Stock Qty
   const handleUpdateStock = async (itemId, newQty) => {
     try {
-      const res = await fetch(`/api/menu/items/${itemId}/stock`, {
+      const res = await fetch(`${API_BASE}/menu/items/${itemId}/stock`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -928,7 +929,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   // Update Order Status
   const handleOrderStatusChange = async (orderId, status) => {
     try {
-      const res = await fetch(`/api/orders/${orderId}/status`, {
+      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -946,7 +947,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleSaveItem = async (form) => {
     try {
       const isEdit = Boolean(editingItem?.id);
-      const res = await fetch(isEdit ? `/api/menu/items/${editingItem.id}` : '/api/menu/items', {
+      const res = await fetch(isEdit ? `${API_BASE}/menu/items/${editingItem.id}` : `${API_BASE}/menu/items`, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(form)
@@ -967,7 +968,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleDeleteItem = async (item) => {
     if (!window.confirm(`Remove ${item.name_en} from the menu?`)) return;
     try {
-      const res = await fetch(`/api/menu/items/${item.id}`, {
+      const res = await fetch(`${API_BASE}/menu/items/${item.id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -982,7 +983,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleSaveCategory = async (form) => {
     try {
       const isEdit = Boolean(editingCategory?.id);
-      const res = await fetch(isEdit ? `/api/menu/categories/${editingCategory.id}` : '/api/menu/categories', {
+      const res = await fetch(isEdit ? `${API_BASE}/menu/categories/${editingCategory.id}` : `${API_BASE}/menu/categories`, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(form)
@@ -1003,7 +1004,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleDeleteCategory = async (category) => {
     if (!window.confirm(`Delete category "${category.name_en}"?`)) return;
     try {
-      const res = await fetch(`/api/menu/categories/${category.id}`, {
+      const res = await fetch(`${API_BASE}/menu/categories/${category.id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -1019,7 +1020,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleSaveCoupon = async (form) => {
     try {
       const isEdit = Boolean(editingCoupon?.id);
-      const res = await fetch(isEdit ? `/api/coupons/${editingCoupon.id}` : '/api/coupons', {
+      const res = await fetch(isEdit ? `${API_BASE}/coupons/${editingCoupon.id}` : `${API_BASE}/coupons`, {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(form)
@@ -1039,7 +1040,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleDeleteCoupon = async (coupon) => {
     if (!window.confirm(`Delete offer ${coupon.code}?`)) return;
     try {
-      const res = await fetch(`/api/coupons/${coupon.id}`, {
+      const res = await fetch(`${API_BASE}/coupons/${coupon.id}`, {
         method: 'DELETE', headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -1054,7 +1055,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const handleToggleCouponActive = async (coupon) => {
     const newStatus = coupon.is_active ? 0 : 1;
     try {
-      const res = await fetch(`/api/coupons/${coupon.id}`, {
+      const res = await fetch(`${API_BASE}/coupons/${coupon.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ ...coupon, is_active: newStatus })
@@ -1079,7 +1080,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
       const payload = { ...form };
       if (isEdit && !payload.password) delete payload.password;
       
-      const url = isEdit ? `/api/staff/${editingStaff.id}` : '/api/staff';
+      const url = isEdit ? `${API_BASE}/staff/${editingStaff.id}` : `${API_BASE}/staff`;
       const method = isEdit ? 'PUT' : 'POST';
       
       const res = await fetch(url, {
@@ -1137,7 +1138,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
     );
     if (!ok) return;
     try {
-      const res = await fetch(`/api/staff/${member.id}`, {
+      const res = await fetch(`${API_BASE}/staff/${member.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -1181,7 +1182,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
     for (const member of targets) {
       if (member.role === role) continue;
       try {
-        const res = await fetch(`/api/staff/${member.id}`, {
+        const res = await fetch(`${API_BASE}/staff/${member.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ role })
@@ -1212,7 +1213,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   /** Enable or disable every selected member in one request. */
   const handleBulkStatus = async (ids, isActive) => {
     try {
-      const res = await fetch('/api/staff/bulk/status', {
+      const res = await fetch(`${API_BASE}/staff/bulk/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ ids, is_active: isActive })
@@ -1242,7 +1243,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
     );
     if (!ok) return;
     try {
-      const res = await fetch('/api/staff/bulk/delete', {
+      const res = await fetch(`${API_BASE}/staff/bulk/delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ ids })
@@ -1268,7 +1269,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
 
   const handleToggleStaff = async (member) => {
     try {
-      const res = await fetch(`/api/staff/${member.id}/status`, {
+      const res = await fetch(`${API_BASE}/staff/${member.id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ is_active: !member.is_active })
