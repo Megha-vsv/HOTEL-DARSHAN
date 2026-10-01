@@ -1001,7 +1001,6 @@ function seedData() {
     const salt = bcrypt.genSaltSync(10);
     const adminPass = bcrypt.hashSync('admin123', salt);
     const chefPass = bcrypt.hashSync('chef123', salt);
-    const customerPass = bcrypt.hashSync('customer123', salt);
 
     const insertUser = db.prepare(`
       INSERT INTO users (email, password_hash, name, phone, role, addresses_json, favorites_json)
@@ -1010,7 +1009,6 @@ function seedData() {
 
     insertUser.run('hoteldarshan9909@gmail.com', adminPass, 'Vasava Rameshbhai', '+91 95861 32916', 'admin', '[]', '[]');
     insertUser.run('bhavikvasavablack@gmail.com', chefPass, 'Bhavil Vasava', '+91 90548 62428', 'chef', '[]', '[]');
-    insertUser.run('customer@darshan.com', customerPass, 'Vasava Meghaben Rajeshbhai', '+91 99240 88990', 'customer', '[]', '[]');
   }
 
   // Always make sure the three staff roles exist, even when an older database already has customers.
