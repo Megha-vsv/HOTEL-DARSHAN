@@ -5,7 +5,7 @@
 // it: if the server has not answered, the screen says it is loading or that it
 // could not load, and it never falls back to something that looks like data.
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+import { apiBase as API_BASE } from './apiBase';
 
 /**
  * A failure that carries the server's own words.

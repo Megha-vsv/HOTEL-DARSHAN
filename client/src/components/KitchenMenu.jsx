@@ -16,8 +16,7 @@ import {
 } from 'lucide-react';
 import { resolveFoodImage } from '../data/foodImages';
 import { useAuth } from '../context/AuthContext';
-
-const API_BASE = '/api';
+import { apiBase as API_BASE } from '../lib/apiBase';
 
 // Same central image resolution used by Menu, Cart, Orders, Admin and Kitchen,
 // so one food item always renders the same existing image everywhere.

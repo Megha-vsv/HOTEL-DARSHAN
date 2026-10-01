@@ -18,7 +18,7 @@
  * credential for as long as it is valid, and a console.log is the last place anyone
  * wants it to end up.
  */
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+import { apiBase as API_BASE } from './apiBase';
 
 // MSG91's Web SDK, loaded on demand. Not in index.html: it is only needed once
 // somebody reaches the code step, and a third-party script on the sign-in page's

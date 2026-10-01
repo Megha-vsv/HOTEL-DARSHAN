@@ -4,6 +4,8 @@
 // stored here, so this module also owns the change notification that keeps those
 // figures in step with whichever address is actually selected.
 
+import { apiBase as API_BASE } from '../lib/apiBase';
+
 const STORAGE_KEY = 'hotelDarshanLocation';
 export const LOCATION_CHANGE_EVENT = 'hd-location-change';
 
@@ -70,8 +72,6 @@ export function writeStoredLocation(next) {
 export function notifyLocationChange() {
   window.dispatchEvent(new Event(LOCATION_CHANGE_EVENT));
 }
-
-const API_BASE = '/api';
 
 /**
  * Look up the coordinates of a typed address so it is priced from where the
