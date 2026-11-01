@@ -53,8 +53,8 @@ export default function CheckoutModal({ isOpen, onClose, onOrderConfirmed }) {
   const { isValid: cartValid, unavailableItems: checkoutUnavailable } = validateCart();
 
   // Form State
-  const [customerName, setCustomerName] = useState(user?.name || 'Megha Vasava');
-  const [customerPhone, setCustomerPhone] = useState(user?.phone || '+91 99240 88990');
+  const [customerName, setCustomerName] = useState(user?.name || '');
+  const [customerPhone, setCustomerPhone] = useState(user?.phone || '');
   const [selectedAddressId, setSelectedAddressId] = useState('current_location');
 
   // Ordering-closed popup. Kept as component state rather than a window global
@@ -180,10 +180,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
   if (!isOpen) return null;
 
   // Saved addresses
-  const savedAddresses = user?.addresses || [
-    { id: 'addr_1', title: 'Home', street: 'B-204, Shivalik Residency, 150ft Ring Road', landmark: 'Near Big Bazaar', city: 'Dediapada, Gujarat - 393040' },
-    { id: 'addr_2', title: 'Office', street: '402, Titanium Business Hub, Kalawad Road', landmark: 'Beside Crystal Mall', city: 'Dediapada, Gujarat - 393040' }
-  ];
+  const savedAddresses = Array.isArray(user?.addresses) ? user.addresses : [];
 
   const handleSelectAddress = (addr, { skipResolve = false } = {}) => {
     selectedAddressIdRef.current = addr.id;

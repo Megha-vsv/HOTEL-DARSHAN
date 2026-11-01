@@ -1,3 +1,4 @@
+
 {
   "name": "hotel-darshan-platform",
   "version": "1.0.0",
@@ -5,23 +6,29 @@
   "type": "module",
   "scripts": {
     "start": "node server/src/server.js",
-    "server": "npm --prefix server start",
-    "client": "npm --prefix client dev",
-    "build": "npm --prefix client run build",
-    "test": "node test/e2e_verification.js",
-    "test:rider-gps": "node test/rider_gps_engine.test.mjs",
-    "test:rider-e2e": "node test/rider_delivery_e2e.mjs",
-    "test:all": "node test/e2e_verification.js && node test/rider_gps_engine.test.mjs && node test/rider_delivery_e2e.mjs"
+    "dev": "node --watch server/src/server.js",
+    "build": "vite build client"
   },
-  "keywords": [
-    "food-delivery",
-    "hotel-darshan",
-    "restaurant",
-    "kds",
-    "realtime",
-    "razorpay"
-  ],
-  "devDependencies": {
-    "socket.io-client": "^4.8.4"
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "12.11.1",
+    "canvas-confetti": "^1.9.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.47.0",
+    "paytmchecksum": "^1.5.0",
+    "razorpay": "^2.9.5",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.4",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.0",
+    "@vitejs/plugin-react": "^6.1.1"
   }
 }
