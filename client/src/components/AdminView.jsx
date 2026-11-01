@@ -466,6 +466,8 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const [reportType, setReportType] = useState('revenue');
   const [reportFormat, setReportFormat] = useState('xlsx');
   const [reportLoading, setReportLoading] = useState(false);
+  const [diagLoading, setDiagLoading] = useState(false);
+  const [diagData, setDiagData] = useState(null);
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(false);
   const [itemSearch, setItemSearch] = useState('');
@@ -3094,6 +3096,37 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
             >
               {reportLoading ? 'Generating...' : 'Download Report'}
             </button>
+            <button
+              disabled={diagLoading}
+              onClick={async () => {
+                setDiagLoading(true);
+                try {
+                  const res = await fetch(`${API_BASE}/admin/diagnostics/payment-status`, { headers: { Authorization: `Bearer ${token}` } });
+                  if (!res.ok) throw new Error('Failed');
+                  setDiagData(await res.json());
+                } catch (e) { alert(e.message); }
+                finally { setDiagLoading(false); }
+              }}
+              className="px-4 py-2 bg-gray-700 text-white rounded"
+            >
+              {diagLoading ? 'Checking...' : 'Check Payment Diagnostics'}
+            </button>
+            {diagData && (
+              <div className="mt-4 text-sm">
+                <p>DB Path: {diagData.dbPath}</p>
+                <p>HOTEL_DARSHAN_DB configured: {String(diagData.hotelDarshanDbConfigured)}</p>
+                <p>Total Orders: {diagData.totalOrders}</p>
+                <p>Payment Status Counts: {JSON.stringify(diagData.paymentStatusCounts)}</p>
+                <table className="w-full mt-2 border">
+                  <thead><tr><th>Order</th><th>Status</th><th>Method</th><th>Payment</th><th>Total</th></tr></thead>
+                  <tbody>
+                    {diagData.orders.map((o, i) => (
+                      <tr key={i}><td>{o.order_number}</td><td>{o.status}</td><td>{o.payment_method}</td><td>{o.payment_status}</td><td>{o.grand_total}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
