@@ -32,6 +32,7 @@ import {
   Tag,
   Users,
   Star,
+  Download,
   Settings as SettingsIcon,
   Plus,
    Edit2,
@@ -460,7 +461,10 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   // A refusal from the server, shown inside the form rather than only as a
   // toast that disappears after five seconds.
   const [staffSaveError, setStaffSaveError] = useState('');
-  const [reviews, setReviews] = useState([]);
+  const [reportPeriod, setReportPeriod] = useState('7d');
+  const [reportType, setReportType] = useState('revenue');
+  const [reportFormat, setReportFormat] = useState('xlsx');
+  const [reportLoading, setReportLoading] = useState(false);
   const [settings, setSettings] = useState({});
   const [loading, setLoading] = useState(false);
   const [itemSearch, setItemSearch] = useState('');
@@ -1304,6 +1308,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
     { id: 'customers', label: 'Customers', icon: Users, iconColor: 'text-[#e53935]' },
     { id: 'staff', label: 'Staff Management', icon: UserCog, iconColor: 'text-[#e53935]' },
     { id: 'reviews', label: 'Reviews', icon: Star, iconColor: 'text-amber-500' },
+    { id: 'reports', label: 'Reports', icon: Download, iconColor: 'text-blue-500' },
     { id: 'settings', label: 'Settings', icon: SettingsIcon, iconColor: 'text-neutral-500' },
   ];
 
@@ -3030,6 +3035,63 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+{/* TAB: REPORTS */}
+        {activeTab === 'reports' && (
+          <div className="bg-white rounded-3xl border border-neutral-200 shadow-xs p-6 space-y-6">
+            <h2 className="font-black text-lg text-neutral-900">Reports & Downloads</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-bold">Period</label>
+                <select value={reportPeriod} onChange={e=>setReportPeriod(e.target.value)} className="w-full border rounded p-2">
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                  <option value="12m">Last 12 Months</option>
+                  <option value="all">All Records</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold">Type</label>
+                <select value={reportType} onChange={e=>setReportType(e.target.value)} className="w-full border rounded p-2">
+                  <option value="revenue">Revenue Report</option>
+                  <option value="orders">Order Report</option>
+                  <option value="customers">Customer Report</option>
+                  <option value="reviews">Review Report</option>
+                  <option value="all">All Reports</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold">Format</label>
+                <select value={reportFormat} onChange={e=>setReportFormat(e.target.value)} className="w-full border rounded p-2">
+                  <option value="xlsx">Excel (.xlsx)</option>
+                  <option value="csv">CSV (.csv)</option>
+                  <option value="pdf">PDF (.pdf)</option>
+                </select>
+              </div>
+            </div>
+            <button
+              disabled={reportLoading}
+              onClick={async () => {
+                setReportLoading(true);
+                try {
+                  const res = await fetch(`${API_BASE}/reports/download?period=${reportPeriod}&type=${reportType}&format=${reportFormat === 'xlsx' ? 'excel' : reportFormat}`, { headers: { Authorization: `Bearer ${token}` } });
+                  if (!res.ok) throw new Error('Failed');
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `hotel-darshan-report.${reportFormat === 'xlsx' ? 'xlsx' : reportFormat}`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch (e) { alert(e.message); }
+                finally { setReportLoading(false); }
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              {reportLoading ? 'Generating...' : 'Download Report'}
+            </button>
           </div>
         )}
 

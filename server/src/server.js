@@ -26,6 +26,7 @@ import settingsRoutes from './routes/settings.js';
 import staffRoutes from './routes/staff.js';
 import geocodeRoutes from './routes/geocode.js';
 import riderRoutes from './routes/rider.js';
+import reportRoutes from './routes/reports.js';
 
 // ============================================
 // ENVIRONMENT CONFIGURATION
@@ -188,7 +189,11 @@ app.use(
   geocodeRoutes
 );
 
-// The rider's own API. Mounted on its own path so it cannot collide with the
+// Reports
+app.use(
+  '/api/reports',
+  reportRoutes
+);
 // rider routes inside `/api/orders`, and gated to the rider role inside the
 // router, where the identity it trusts is the verified token's.
 app.use(
