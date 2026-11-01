@@ -174,6 +174,19 @@ router.post('/create', optionalAuthMiddleware, (req, res) => {
   const settings = getSettings();
   const userId = req.user ? req.user.id : null;
 
+  const idempotencyKey = req.get('Idempotency-Key') || req.body?.idempotency_key || null;
+  if (idempotencyKey) {
+    const existing = db.prepare('SELECT order_id FROM order_idempotency_keys WHERE key = ?').get(idempotencyKey);
+    if (existing) {
+      const existingOrder = db.prepare('SELECT * FROM orders WHERE id = ?').get(existing.order_id);
+      if (existingOrder) {
+        existingOrder.items = JSON.parse(existingOrder.items_json || '[]');
+        existingOrder.address = JSON.parse(existingOrder.address_json || '{}');
+        return res.status(200).json(existingOrder);
+      }
+    }
+  }
+
   // Run everything in an ACID SQLite Transaction
   const executeOrderTransaction = db.transaction(() => {
     let calculatedItemTotal = 0;
@@ -390,6 +403,9 @@ router.post('/create', optionalAuthMiddleware, (req, res) => {
     }
 
     const createdOrder = db.prepare('SELECT * FROM orders WHERE id = ?').get(result.lastInsertRowid);
+    if (idempotencyKey) {
+      db.prepare('INSERT INTO order_idempotency_keys (key, order_id) VALUES (?, ?)').run(idempotencyKey, result.lastInsertRowid);
+    }
     createdOrder.items = JSON.parse(createdOrder.items_json);
     createdOrder.address = JSON.parse(createdOrder.address_json);
     // Echo the authoritative pricing decision so the receipt shows exactly what
@@ -434,6 +450,17 @@ router.post('/create', optionalAuthMiddleware, (req, res) => {
 
     return res.status(201).json(order);
   } catch (err) {
+    if (idempotencyKey && err && /UNIQUE constraint failed: order_idempotency_keys\.key/i.test(err.message || '')) {
+      const existing = db.prepare('SELECT order_id FROM order_idempotency_keys WHERE key = ?').get(idempotencyKey);
+      if (existing) {
+        const existingOrder = db.prepare('SELECT * FROM orders WHERE id = ?').get(existing.order_id);
+        if (existingOrder) {
+          existingOrder.items = JSON.parse(existingOrder.items_json || '[]');
+          existingOrder.address = JSON.parse(existingOrder.address_json || '{}');
+          return res.status(200).json(existingOrder);
+        }
+      }
+    }
     // A refusal raised inside the transaction is an expected answer, not a fault.
     if (err instanceof OrderRejectedError) {
       return res.status(err.status).json(err.payload);

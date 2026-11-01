@@ -315,6 +315,10 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
     orderSubmissionLock.current = true;
     setIsProcessing(true);
 
+    const idempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     const orderPayload = {
       items: cart,
       order_type: orderType,
@@ -335,6 +339,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
     try {
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
+      headers['Idempotency-Key'] = idempotencyKey;
 
       const createRes = await fetch(`${API_BASE}/orders/create`, { method: 'POST', headers, body: JSON.stringify(orderPayload) });
       const orderData = await createRes.json();

@@ -281,6 +281,13 @@ export function initDatabase() {
         counter_date TEXT PRIMARY KEY,
         value INTEGER NOT NULL DEFAULT 0
       );
+
+      CREATE TABLE IF NOT EXISTS order_idempotency_keys (
+        key TEXT PRIMARY KEY,
+        order_id INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+      );
     `);
 
   // A registration claim is a bearer token, so the only way to stop it being
