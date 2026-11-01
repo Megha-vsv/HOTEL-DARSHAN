@@ -372,7 +372,7 @@ function StatusBadge({ status }) {
  * would let a link to the rider portal resolve back into the admin dashboard.
  */
 const ADMIN_SECTIONS = new Set([
-  'dashboard', 'orders', 'kitchen', 'fleet', 'menu', 'coupons', 'customers', 'staff', 'reviews', 'settings',
+  'dashboard', 'orders', 'kitchen', 'fleet', 'menu', 'coupons', 'customers', 'staff', 'reviews', 'reports', 'settings',
 ]);
 
 export default function AdminView({ onNavigate, canOpen = () => true }) {
@@ -434,6 +434,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   const [viewingOrder, setViewingOrder] = useState(null);
 
   // Reviews filter + search + details modal
+  const [reviews, setReviews] = useState([]);
   const [reviewSearch, setReviewSearch] = useState('');
   const [reviewRatingFilter, setReviewRatingFilter] = useState('all');
   const [reviewDateFilter, setReviewDateFilter] = useState('all');
@@ -461,7 +462,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   // A refusal from the server, shown inside the form rather than only as a
   // toast that disappears after five seconds.
   const [staffSaveError, setStaffSaveError] = useState('');
-  const [reportPeriod, setReportPeriod] = useState('7d');
+  const [reportPeriod, setReportPeriod] = useState('all');
   const [reportType, setReportType] = useState('revenue');
   const [reportFormat, setReportFormat] = useState('xlsx');
   const [reportLoading, setReportLoading] = useState(false);
@@ -3078,7 +3079,8 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
                 try {
                   const res = await fetch(`${API_BASE}/reports/download?period=${reportPeriod}&type=${reportType}&format=${reportFormat === 'xlsx' ? 'excel' : reportFormat}`, { headers: { Authorization: `Bearer ${token}` } });
                   if (!res.ok) throw new Error('Failed');
-                  const blob = await res.blob();
+                  const arrayBuffer = await res.arrayBuffer();
+                  const blob = new Blob([arrayBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url;

@@ -12,9 +12,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // The override lets a test run against a throwaway copy of the database instead of
 // the live one, so verification never writes to real orders.
-const dbPath = process.env.HOTEL_DARSHAN_DB || path.join(__dirname, '..', 'hotel_darshan.db');
-
+export const dbPath = process.env.HOTEL_DARSHAN_DB || path.join(__dirname, '..', 'hotel_darshan.db');
 export const db = new Database(dbPath);
+
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 

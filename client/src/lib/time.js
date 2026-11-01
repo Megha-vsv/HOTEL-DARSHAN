@@ -311,27 +311,6 @@ export function describeArrival(order, now = Date.now()) {
   return `expected ${formatClockTime(arrival)}`;
 }
 
-export default {
-  APP_TIME_ZONE,
-  parseServerTimestamp,
-  toDate,
-  formatClockTime,
-  formatDate,
-  formatDayDate,
-  formatDateTime,
-  istDayKey,
-  minutesBetween,
-  minutesSince,
-  timeAgo,
-  getEstimatedMinutes,
-  estimatedArrivalDate,
-  formatEstimatedArrival,
-  describeArrival,
-  istMinutesSinceMidnight,
-  parseHHMM,
-  orderingStatus,
-  ORDERING_HOURS
-};
 
 /**
  * Ordering-hours check for the browser.
@@ -408,3 +387,25 @@ export function orderingStatus(opening, closing) {
     now: formatHHMM(now)
   };
 }
+
+export default {
+  APP_TIME_ZONE,
+  parseServerTimestamp,
+  toDate,
+  formatClockTime,
+  formatDate,
+  formatDayDate,
+  formatDateTime,
+  istDayKey,
+  minutesBetween,
+  minutesSince,
+  timeAgo,
+  getEstimatedMinutes,
+  estimatedArrivalDate,
+  formatEstimatedArrival,
+  describeArrival,
+  istMinutesSinceMidnight,
+  parseHHMM,
+  orderingStatus,
+  ORDERING_HOURS
+};
