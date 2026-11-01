@@ -27,6 +27,7 @@ import staffRoutes from './routes/staff.js';
 import geocodeRoutes from './routes/geocode.js';
 import riderRoutes from './routes/rider.js';
 import reportRoutes from './routes/reports.js';
+import diagnosticsRoutes from './routes/diagnostics.js';
 
 // ============================================
 // ENVIRONMENT CONFIGURATION
@@ -193,6 +194,11 @@ app.use(
 app.use(
   '/api/reports',
   reportRoutes
+);
+// Temporary admin diagnostics
+app.use(
+  '/api/admin/diagnostics',
+  diagnosticsRoutes
 );
 // rider routes inside `/api/orders`, and gated to the rider role inside the
 // router, where the identity it trusts is the verified token's.
