@@ -2972,18 +2972,19 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-neutral-50 border-b border-neutral-200 text-neutral-500 font-bold uppercase tracking-wider">
                     <tr>
-                      <th className="p-4">Order</th>
-                      <th className="p-4">Customer</th>
-                      <th className="p-4">Rating</th>
-                      <th className="p-4">Comment</th>
-                      <th className="p-4">Date</th>
-                      <th className="p-4 text-right">Action</th>
+<th className="p-4">Order</th>
+                       <th className="p-4">Customer</th>
+                       <th className="p-4">Rating</th>
+                       <th className="p-4">Items</th>
+                       <th className="p-4">Comment</th>
+                       <th className="p-4">Date</th>
+                       <th className="p-4 text-right">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-neutral-100">
                     {filteredReviews.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-8 text-center text-neutral-400 text-xs font-semibold">
+                        <td colSpan={7} className="p-8 text-center text-neutral-400 text-xs font-semibold">
                           {reviews.length === 0 ? 'No reviews found yet.' : 'No reviews match the current filter'}
                         </td>
                       </tr>
@@ -3001,7 +3002,15 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
                               {review.rating || 0}★
                             </span>
                           </td>
-                          <td className="p-4 text-neutral-600 max-w-xs truncate">{review.comment || 'No comment'}</td>
+                          <td className="p-4 text-neutral-600 max-w-xs">
+                             {(() => {
+                               try {
+                                 const items = JSON.parse(review.items_json || '[]');
+                                 return items.map((i) => i.name_en || i.name || i.id).join(', ') || 'N/A';
+                               } catch { return 'N/A'; }
+                             })()}
+                           </td>
+                           <td className="p-4 text-neutral-600 max-w-xs truncate">{review.comment || 'No comment'}</td>
                           <td className="p-4 text-neutral-500">
                             {formatDate(review.created_at) || 'N/A'}
                           </td>

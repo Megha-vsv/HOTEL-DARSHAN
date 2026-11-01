@@ -584,72 +584,7 @@ export function initDatabase() {
   // ------------------------------------------------------------------
   migratePhoneUniquenessToPerRole();
 
-  // ------------------------------------------------------------------
-  // Remove the rows that soft-delete left behind.
-  //
-  // Staff accounts used to be "deleted" by stamping `deleted_at` and keeping the
-  // row, because a rider's record is named by the orders they carried. Delete is
-  // permanent now, and that turns out to cost nothing: `orders.rider_id` and
-  // `orders.released_rider_id` carry no foreign key, and every order already
-  // stores the rider's name in `rider_name` beside the id. So removing the row
-  // leaves history readable and leaves the orders themselves untouched.
-  //
-  // What this migration does is finish the deletions that soft-delete only
-  // promised. Every one of these accounts was already refused sign-in before this
-  // ran, so nothing that works today stops working. A rider who is still mid-
-  // delivery is kept, and reported, rather than deleted out from under a customer
-  // who is watching them arrive.
-  //
-  // `deleted_at` itself is left in place. The unique index and the auth guard
-  // still read it, and a column that says "IS NULL" costs nothing to keep.
-  // ------------------------------------------------------------------
-  try {
-    const legacySoftDeleted = db
-      .prepare(
-        `SELECT id, name FROM users
-         WHERE role IN ('admin','chef','rider') AND deleted_at IS NOT NULL`
-      )
-      .all();
-
-    if (legacySoftDeleted.length) {
-      const stillCarrying = new Set(
-        db
-          .prepare(
-            `SELECT DISTINCT rider_id AS id FROM orders
-             WHERE rider_id IS NOT NULL
-               AND status NOT IN ('DELIVERED','COMPLETED','CANCELLED','REJECTED')`
-          )
-          .all()
-          .map((r) => r.id)
-      );
-
-      const removable = legacySoftDeleted.filter((r) => !stillCarrying.has(r.id));
-      const kept = legacySoftDeleted.filter((r) => stillCarrying.has(r.id));
-
-      if (removable.length) {
-        const drop = db.prepare('DELETE FROM users WHERE id = ?');
-        const purge = db.transaction(() => {
-          for (const row of removable) drop.run(row.id);
-        });
-        purge();
-        console.log(
-          `[db] permanently deleted ${removable.length} previously soft-deleted staff account(s): ` +
-          removable.map((r) => `#${r.id} ${r.name}`).join(', ')
-        );
-      }
-      if (kept.length) {
-        console.warn(
-          `[db] ${kept.length} previously soft-deleted staff account(s) were kept because they are still ` +
-          `carrying an order: ` + kept.map((r) => `#${r.id} ${r.name}`).join(', ')
-        );
-      }
-    }
-  } catch (e) {
-    // A failure here must not stop the server booting. Nothing depends on the
-    // cleanup: a leftover row is invisible in Staff Management and already
-    // refused sign-in, which is exactly the old behaviour.
-    console.warn(`[db] could not purge soft-deleted staff accounts: ${e.message}`);
-  }
+  // Legacy soft-deleted staff accounts are preserved; only an authorized admin may delete/deactivate them.
 
   // Backfill rider state from the flag that predates it, once. A rider who was
   // flagged available and carrying an order is BUSY; available with nothing to

@@ -33,9 +33,9 @@ router.get('/', authMiddleware, requireRole(['admin']), (req, res) => {
 router.get('/reviews', authMiddleware, requireRole(['admin']), (req, res) => {
   try {
     const reviews = db.prepare(`
-      SELECT r.*, o.order_number, o.created_at as order_date
-      FROM reviews r
-      LEFT JOIN orders o ON r.order_id = o.id
+SELECT r.*, o.order_number, o.created_at as order_date, o.items_json
+       FROM reviews r
+       LEFT JOIN orders o ON r.order_id = o.id
       ORDER BY r.id DESC
     `).all();
     res.json(reviews);
