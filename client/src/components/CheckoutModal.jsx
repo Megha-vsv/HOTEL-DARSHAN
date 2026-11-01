@@ -66,10 +66,12 @@ export default function CheckoutModal({ isOpen, onClose, onOrderConfirmed }) {
   const [city, setCity] = useState(user?.addresses?.[0]?.city || 'Dediapada, Gujarat - 393040');
   const [deliveryInstructions, setDeliveryInstructions] = useState('Please call when at the gate');
 
-  const [paymentMethod, setPaymentMethod] = useState('online');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+const [paymentMethod, setPaymentMethod] = useState('online');
+const [isProcessing, setIsProcessing] = useState(false);
+const [errorMessage, setErrorMessage] = useState('');
 
+// Prevent multiple order submissions before React updates the UI.
+const orderSubmissionLock = useRef(false);
   // "Add New Address" form. Addresses are persisted through the same profile
   // endpoint AccountSettings and LocationGate use, so there is only ever one
   // address book in the app.
@@ -282,6 +284,8 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
   };
 
   const handlePlaceOrder = async () => {
+    if (orderSubmissionLock.current) return;
+
     setErrorMessage('');
 
     // Ordering-hours gate. This runs before every validation so the popup
@@ -308,7 +312,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
         `Some items in your cart are no longer available: ${unavailableList}. Please remove them from the cart before placing your order.`
       );
     }
-
+    orderSubmissionLock.current = true;
     setIsProcessing(true);
 
     const orderPayload = {
@@ -327,6 +331,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
       special_instructions: deliveryInstructions
     };
 
+    let orderCreated = false;
     try {
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -334,6 +339,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
       const createRes = await fetch(`${API_BASE}/orders/create`, { method: 'POST', headers, body: JSON.stringify(orderPayload) });
       const orderData = await createRes.json();
       if (!createRes.ok) throw new Error(orderData.error || 'Failed to place order.');
+      orderCreated = true;
 
       if (paymentMethod !== 'online') { completeOrderSuccess(orderData); return; }
 
@@ -367,12 +373,13 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
         // ignored. Leaving the array empty would let Paytm choose the order.
         payMode: { order: ['UPI', 'CARD', 'NB'] },
         handler: {
-          notifyMerchant: (eventName) => { if (eventName === 'APP_CLOSED') { setPaymentPendingModal(false); setIsProcessing(false); } },
+          notifyMerchant: (eventName) => { if (eventName === 'APP_CLOSED') { orderSubmissionLock.current = false; setPaymentPendingModal(false); setIsProcessing(false); } },
           transactionStatus: () => verifyPaytmOnServer(orderData.id)
         }
       });
       window.Paytm.CheckoutJS.invoke();
     } catch (err) {
+      orderSubmissionLock.current = false;
       setIsProcessing(false); setPaymentPendingModal(false); setErrorMessage(err.message);
     }
   };
@@ -387,7 +394,7 @@ const [resolvingAddressId, setResolvingAddressId] = useState(null);
       const verifyData = await verifyRes.json();
       if (!verifyRes.ok || !verifyData.success) throw new Error(verifyData.error || t('paymentFailed'));
       setPaymentPendingModal(false); completeOrderSuccess(verifyData.order);
-    } catch (e) { setIsProcessing(false); setPaymentPendingModal(false); setErrorMessage(e.message); }
+    } catch (e) { orderSubmissionLock.current = false; setIsProcessing(false); setPaymentPendingModal(false); setErrorMessage(e.message); }
   };
 
   const completeOrderSuccess = (confirmedOrder) => {
