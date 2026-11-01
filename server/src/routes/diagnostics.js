@@ -18,4 +18,3 @@ router.get('/payment-status', (req, res) => {
 });
 
 export default router;
-EOF
