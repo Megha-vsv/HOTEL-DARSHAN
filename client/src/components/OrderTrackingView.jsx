@@ -17,6 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import { flowOf, stageIndex, isFinished as isFinishedStatus } from '../lib/orderStatus';
 import { parseServerTimestamp, formatDateTime, formatEstimatedArrival } from '../lib/time.js';
 import DeliveryMap from './DeliveryMap';
+import { apiBase as API_BASE } from '../lib/apiBase';
 
 // Expected minutes at each status boundary, aligned with DELIVERY_STATUS_STEPS.
 // Only used for the shape of the countdown; the minutes actually shown come
@@ -204,7 +205,7 @@ export default function OrderTrackingView({ orderIdOrNumber, onBackToMenu, onOrd
       // the loading state, or the page appears to reload every time it wakes up.
       if (!quiet) setLoading(true);
       setError('');
-      const response = await fetch(`/api/orders/${encodeURIComponent(targetId)}/track`, {
+      const response = await fetch(`${API_BASE}/orders/${encodeURIComponent(targetId)}/track`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       const data = await response.json();

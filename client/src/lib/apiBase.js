@@ -21,7 +21,9 @@
 
 const raw = String(import.meta.env.VITE_API_URL || '').trim();
 
-export const apiOrigin = raw || window.location.origin;
+export const apiOrigin = raw
+  ? raw.replace(/\/+$/, '').replace(/\/api$/i, '')
+  : window.location.origin;
 export const apiBase = raw
   ? raw.replace(/\/+$/, '').replace(/\/api$/i, '') + '/api'
   : '/api';

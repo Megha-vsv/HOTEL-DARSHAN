@@ -100,9 +100,30 @@ async function provisionStaff(adminToken, { name, role }) {
 // added as a second dependency here.
 const serverRequire = createRequire(new URL('../server/src/server.js', import.meta.url));
 const Database = serverRequire('better-sqlite3');
+const bcrypt = serverRequire('bcryptjs');
 // fileURLToPath, not `.pathname`: the checkout path contains a space, which
 // `.pathname` hands back percent-encoded and the driver then cannot open.
-const DB_PATH = fileURLToPath(new URL('../server/hotel_darshan.db', import.meta.url));
+const DB_PATH = process.env.HOTEL_DARSHAN_DB || fileURLToPath(new URL('../server/hotel_darshan.db', import.meta.url));
+
+function ensureIsolatedCustomer() {
+  if (!process.env.HOTEL_DARSHAN_DB) return;
+  const db = new Database(DB_PATH);
+  try {
+    const customer = db.prepare("SELECT id FROM users WHERE role = 'customer' LIMIT 1").get();
+    if (customer) return;
+    db.prepare(`
+      INSERT INTO users (email, password_hash, name, phone, role, addresses_json, favorites_json)
+      VALUES (?, ?, ?, ?, 'customer', '[]', '[]')
+    `).run(
+      'e2e-customer@hotel-darshan.invalid',
+      bcrypt.hashSync('isolated-e2e-account', 10),
+      'Isolated E2E Customer',
+      '+919000000001'
+    );
+  } finally {
+    db.close();
+  }
+}
 
 function readRawSetting(key) {
   const db = new Database(DB_PATH, { readonly: true });
@@ -176,6 +197,8 @@ async function runTests() {
   assert(adminLogin.data.user.role === 'admin', 'User has admin role');
   const adminToken = adminLogin.data.token;
   const secret = readJwtSecret();
+
+  ensureIsolatedCustomer();
 
   // The customer this suite places orders as.
   //

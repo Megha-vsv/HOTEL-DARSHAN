@@ -105,6 +105,20 @@ function autoJoinRooms(socket, user) {
   for (const { id } of ordersForUser(user)) socket.join(orderRoom(id));
 }
 
+function kitchenBoardOrders() {
+  const rows = db.prepare(`
+    SELECT id FROM orders
+    WHERE status NOT IN ('DELIVERED','COMPLETED','CANCELLED','REJECTED')
+       OR id IN (
+         SELECT id FROM orders
+         WHERE status IN ('DELIVERED','COMPLETED','CANCELLED','REJECTED')
+         ORDER BY id DESC LIMIT 50
+       )
+    ORDER BY id DESC
+  `).all();
+  return rows.map(({ id }) => trackingPayload(getOrder(id))).filter(Boolean);
+}
+
 /**
  * The state a reconnecting client cannot have got from the events it missed.
  *
@@ -125,6 +139,14 @@ function resyncPayload(user) {
       // to redraw itself after a drop, rather than waiting to be told again.
       activeDeliveries: riderActiveOrders(user.id) || [],
       orders: ordersForUser(user).map((r) => trackingPayload(getOrder(r.id))).filter(Boolean),
+      at: new Date().toISOString()
+    };
+  }
+  if (user.role === 'admin' || user.role === 'chef') {
+    return {
+      ok: true,
+      role: user.role,
+      orders: kitchenBoardOrders(),
       at: new Date().toISOString()
     };
   }

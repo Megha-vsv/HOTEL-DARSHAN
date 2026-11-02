@@ -25,7 +25,7 @@ const serverRequire = createRequire(new URL('../server/src/server.js', import.me
 const Database = serverRequire('better-sqlite3');
 // fileURLToPath, not `.pathname`: the checkout path contains a space, which
 // `.pathname` hands back percent-encoded and the driver then cannot open.
-const DB_PATH = fileURLToPath(new URL('../server/hotel_darshan.db', import.meta.url));
+const DB_PATH = process.env.HOTEL_DARSHAN_DB || fileURLToPath(new URL('../server/hotel_darshan.db', import.meta.url));
 
 const BASE = 'http://localhost:5000';
 const HOTEL = { lat: 21.6271369, lng: 73.5898076 };

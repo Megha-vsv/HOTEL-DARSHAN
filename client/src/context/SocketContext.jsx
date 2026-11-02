@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
+import { useAuth } from './AuthContext';
+import { apiBase as API_BASE, apiOrigin } from '../lib/apiBase';
 
 const SocketContext = createContext();
 
 export function SocketProvider({ children }) {
+  const { token, user } = useAuth();
   const [socket, setSocket] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -92,24 +95,23 @@ export function SocketProvider({ children }) {
     const token = getToken();
     const headers = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch(`/api/orders/${encodeURIComponent(orderId)}/status`, {
+    const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(orderId)}/status`, {
       method: 'PATCH',
       headers,
       body: JSON.stringify({ status })
     });
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const data = await res.json();
       throw new Error(data.error || 'Failed to update order status');
     }
-    return res.json();
+    return data;
   };
 
   useEffect(() => {
     // The server identifies the socket from this token, the same one the HTTP
-    // API uses. Without it the socket is anonymous and cannot be given an order
-    // room, so the tracker would silently receive nothing.
-    const token = getToken();
-    const socketInstance = io(window.location.origin, {
+    // API uses. Recreate it when login or logout changes the token; otherwise
+    // staff screens keep an anonymous socket created before staff signed in.
+    const socketInstance = io(apiOrigin, {
       transports: ['websocket', 'polling'],
       auth: token ? { token } : {},
       reconnection: true,
@@ -137,6 +139,14 @@ export function SocketProvider({ children }) {
       addNotification(notif.title, notif.message, notif.type || 'info');
     });
 
+    const handleSync = (snapshot) => {
+      if (snapshot?.role === 'admin' || snapshot?.role === 'chef') {
+        setOrders(Array.isArray(snapshot.orders) ? snapshot.orders : []);
+      } else {
+        setOrders([]);
+      }
+    };
+
     const handleNewOrder = (newOrder) => {
       setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== newOrder.id)]);
     };
@@ -147,20 +157,24 @@ export function SocketProvider({ children }) {
       );
     };
 
+    socketInstance.on('sync', handleSync);
     socketInstance.on('order:created', handleNewOrder);
     socketInstance.on('order:status_updated', handleStatusUpdate);
 
     setSocket(socketInstance);
 
     return () => {
+      socketInstance.off('sync', handleSync);
       socketInstance.off('order:created', handleNewOrder);
       socketInstance.off('order:status_updated', handleStatusUpdate);
       socketInstance.disconnect();
     };
-  }, []);
+  }, [token]);
+
+  const isKitchenStaff = user?.role === 'admin' || user?.role === 'chef';
 
   return (
-    <SocketContext.Provider value={{ socket, connected, notifications, orders, addNotification, dismissNotification, playNotificationSound, updateOrderStatus }}>
+    <SocketContext.Provider value={{ socket, connected, notifications, orders: isKitchenStaff ? orders : [], addNotification, dismissNotification, playNotificationSound, updateOrderStatus }}>
       {children}
     </SocketContext.Provider>
   );

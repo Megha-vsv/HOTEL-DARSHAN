@@ -195,9 +195,9 @@ function CompletedOrdersHistory({ orders, onClose }) {
             </div>
             <div>
               <h2 className="text-lg font-black text-neutral-900 leading-tight">
-                All Completed Orders
+                Recent Completed Orders
               </h2>
-              <p className="text-xs text-neutral-400">{completedOrders.length} total completed orders</p>
+              <p className="text-xs text-neutral-400">Showing the {completedOrders.length} most recent completed orders</p>
             </div>
           </div>
         </div>
@@ -976,6 +976,12 @@ function KitchenView() {
 
     try {
       if (typeof updateOrderStatus === 'function') {
+        // The workflow requires an explicit confirmation before preparation.
+        // New orders arrive as ORDER_PLACED, so advance through both valid stages
+        // when the kitchen starts cooking directly from that card.
+        if (order.status === 'ORDER_PLACED' && nextStatus === 'PREPARING') {
+          await updateOrderStatus(order.id, 'ORDER_CONFIRMED');
+        }
         await updateOrderStatus(
           order.id,
           nextStatus
@@ -985,6 +991,11 @@ function KitchenView() {
       console.error(
         'Failed to update kitchen order:',
         error
+      );
+      addNotification(
+        'Order Update Failed',
+        error.message || 'Unable to update the kitchen order status.',
+        'error'
       );
     }
   }
@@ -1340,7 +1351,7 @@ function KitchenView() {
                           className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium text-xs transition cursor-pointer"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                          View All Completed Orders
+                          View Recent Completed Orders
                         </button>
                       </div>
                     )}
@@ -1438,7 +1449,7 @@ function KitchenView() {
                           className="w-full flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium text-[10px] transition cursor-pointer"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                          View All Completed Orders
+                          View Recent Completed Orders
                         </button>
                       </div>
                     )}

@@ -936,7 +936,7 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
   // Update Order Status
   const handleOrderStatusChange = async (orderId, status) => {
     try {
-      const res = await fetch(`${API_BASE}/orders/${orderId}/status`, {
+      const res = await fetch(`${API_BASE}/orders/${encodeURIComponent(orderId)}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -944,11 +944,13 @@ export default function AdminView({ onNavigate, canOpen = () => true }) {
         },
         body: JSON.stringify({ status })
       });
-      if (res.ok) {
-        const updated = await res.json();
-        setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
-      }
-    } catch (e) {}
+      const updated = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(updated.error || 'Unable to update order status.');
+      setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
+      addNotification('Order Updated', `Order #${updated.order_number || updated.id} is now ${status}.`, 'success');
+    } catch (error) {
+      addNotification('Order Update Failed', error.message || 'Unable to update order status.', 'error');
+    }
   };
 
   const handleSaveItem = async (form) => {
